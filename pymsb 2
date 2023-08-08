@@ -102,5 +102,43 @@ When accessing the shared folder using the SMB protocol, the network path would 
 
 In the Python code example provided earlier, you need to replace `your_share_name` with the actual share name you have set up on your NAS device.
 
+****************************************************************************************
+import os
+from smb.SMBConnection import SMBConnection
+import pandas as pd
+
+def connect_to_nas(username, password, server_name, nas_share_name):
+    conn = SMBConnection(username, password, os.uname()[1], server_name, domain='', use_ntlm_v2=True)
+    assert conn.connect(server_name, 139)
+    share_list = conn.listShares()
+    for share in share_list:
+        if share.name == nas_share_name:
+            return conn, share
+    raise ValueError(f"NAS share '{nas_share_name}' not found")
+
+def read_excel_from_nas(nas_conn, share, excel_file_path):
+    with open(excel_file_path, 'wb') as f:
+        nas_conn.retrieveFile(share.name, excel_file_path, f)
+
+    # Read the Excel file using pandas
+    df = pd.read_excel(excel_file_path)
+    return df
+
+if __name__ == "__main__":
+    # Replace these with your NAS credentials and server information
+    nas_username = 'your_nas_username'
+    nas_password = 'your_nas_password'
+    nas_server_name = 'nas_server_name_or_ip'
+    nas_share_name = 'your_nas_share_name'
+    excel_file_path_on_nas = '/path/to/your/excel_file.xlsx'
+
+    # Establish SMB connection
+    nas_conn, share = connect_to_nas(nas_username, nas_password, nas_server_name, nas_share_name)
+
+    # Read the Excel file from the NAS and store it in a DataFrame
+    df = read_excel_from_nas(nas_conn, share, excel_file_path_on_nas)
+
+    # Do whatever you want with the DataFrame
+    print(df.head())
 
 
