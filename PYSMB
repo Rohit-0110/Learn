@@ -1,0 +1,191 @@
+pip install pysmb
+pip install openpyxl
+
+from smb.SMBConnection import SMBConnection
+import openpyxl
+
+def connect_to_nas_drive(server_name, server_ip, username, password):
+    connection = SMBConnection(username, password, '', server_name, use_ntlm_v2=True)
+    if connection.connect(server_ip, 139):
+        return connection
+    else:
+        raise ConnectionError("Failed to connect to NAS drive.")
+
+def download_excel_from_nas(connection, shared_folder, excel_filename, local_download_path):
+    with open(local_download_path, 'wb') as file:
+        connection.retrieveFile(shared_folder, excel_filename, file)
+
+def read_excel_file(file_path):
+    wb = openpyxl.load_workbook(file_path)
+    sheet = wb.active
+
+    for row in sheet.iter_rows(min_row=1, values_only=True):
+        # Do something with the data in each row, e.g., print it
+        print(row)
+
+def main():
+    server_name = "NAS_SERVER_NAME"
+    server_ip = "NAS_SERVER_IP"
+    username = "YOUR_USERNAME"
+    password = "YOUR_PASSWORD"
+    shared_folder = "SHARED_FOLDER_NAME"
+    excel_filename = "YOUR_EXCEL_FILE.xlsx"
+    local_download_path = "local_copy.xlsx"
+
+    try:
+        # Step 1: Connect to the NAS drive
+        connection = connect_to_nas_drive(server_name, server_ip, username, password)
+
+        # Step 2: Download the Excel file
+        download_excel_from_nas(connection, shared_folder, excel_filename, local_download_path)
+
+        # Step 3: Read and process the Excel file
+        read_excel_file(local_download_path)
+
+        # Close the connection
+        connection.close()
+
+    except Exception as e:
+        print("Error:", e)
+
+if __name__ == "__main__":
+    main()
+
+
+
+***********************************************
+
+pip install smbprotocol
+pip install pandas
+
+from smbprotocol.connection import Connection
+
+# Replace these with your NAS credentials and shared folder details
+nas_username = "your_nas_username"
+nas_password = "your_nas_password"
+nas_host = "your_nas_ip_or_hostname"
+shared_folder = "your_shared_folder_name"
+
+# Create an SMB connection
+conn = Connection(username=nas_username, password=nas_password, host=nas_host)
+conn.connect()
+
+
+from smbprotocol.open import create
+
+# Replace 'your_file.xlsx' with the actual file path on the shared folder
+file_path_on_shared_folder = f"\\\\{nas_host}\\{shared_folder}\\your_file.xlsx"
+
+# Open the Excel file
+with create(conn, file_path_on_shared_folder) as file:
+    data = file.read()
+
+
+    import pandas as pd
+
+# Load the data into a Pandas DataFrame
+df = pd.read_excel(data)
+
+# Now you can work with the DataFrame as you normally would
+print(df.head())
+
+
+conn.close()
+
+
+*************************************************************************
+
+pip install smbprotocol pandas
+
+import smbclient
+import pandas as pd
+
+nas_server = "smb://<NAS_SERVER_IP_OR_HOSTNAME>"
+nas_share = "<NAS_SHARE_NAME>"
+nas_username = "<NAS_USERNAME>"
+nas_password = "<NAS_PASSWORD>"
+
+
+with smbclient.open_file(
+    f"{nas_server}/{nas_share}/path/to/your/excel/file.xlsx",
+    username=nas_username,
+    password=nas_password,
+    mode='rb',
+) as f:
+    # Read the Excel file using pandas
+    df = pd.read_excel(f)
+
+
+ print(df.head())  # Print the first few rows of the Excel file
+
+
+***************************************************
+
+
+pip install pandas
+pip install pysmb
+
+from smb.SMBConnection import SMBConnection
+
+def connect_to_smb(username, password, server_ip, server_name, share_name):
+    connection = SMBConnection(username, password, 'client', server_name, use_ntlm_v2=True)
+    connection.connect(server_ip, 139)
+    return connection
+
+# Replace the following variables with your SMB server details
+username = 'your_username'
+password = 'your_password'
+server_ip = 'smb_server_ip'
+server_name = 'smb_server_name'
+share_name = 'share_name'
+
+# Establish the connection
+conn = connect_to_smb(username, password, server_ip, server_name, share_name)
+
+
+import pandas as pd
+from io import BytesIO
+
+def read_excel_from_smb(connection, file_path):
+    file_obj = BytesIO()
+    connection.retrieveFile(share_name, file_path, file_obj)
+    file_obj.seek(0)
+    return pd.read_excel(file_obj)
+
+# Replace 'file_path_on_smb' with the path to your Excel file on the SMB share
+file_path_on_smb = '/path/to/your/excel_file.xlsx'
+
+# Read the Excel file from SMB share
+df = read_excel_from_smb(conn, file_path_on_smb)
+print(df.head())  # Display the first few rows of the DataFrame
+
+
+
+******************************************************************************
+
+
+
+
+import pandas as pd
+import os
+
+# Replace these variables with your SMB drive credentials and file path
+SMB_USERNAME = "your_smb_username"
+SMB_PASSWORD = "your_smb_password"
+SMB_SHARE_PATH = "smb://your_smb_server/share_folder"  # Replace with the actual SMB share path
+EXCEL_FILE_NAME = "your_excel_file.xlsx"  # Replace with the actual Excel file name
+
+# Mount the SMB drive (optional if it's already mounted)
+os.system(f"mount -t smbfs //{SMB_USERNAME}:{SMB_PASSWORD}@{SMB_SHARE_PATH} /Volumes/smb_mount")
+
+# Full path to the Excel file on the mounted SMB drive
+excel_file_path = f"/Volumes/smb_mount/{EXCEL_FILE_NAME}"
+
+# Read the Excel file using Pandas
+df = pd.read_excel(excel_file_path)
+
+# Print the data from the Excel file
+print(df)
+
+# Unmount the SMB drive (optional, if you want to unmount after reading the file)
+os.system("umount /Volumes/smb_mount")
