@@ -148,6 +148,8 @@ smb://192.168.1.100/SharedDocs
 smb://[NAS_IP_Address]/[NAS_Shared_Folder_Name]
 mount -t smbfs //username:password@nas_ip_address/shared_folder_name ~/Desktop/NAS
 mount -t smbfs //NAS_IP_Address_or_Hostname/Share_Name /path/to/local/mount/point
+sudo mkdir /Volumes/NAS  # Create a local directory as the mount point
+sudo mount_smbfs //username:password@192.168.1.100/SharedFolder /Volumes/NAS
 
 
 
