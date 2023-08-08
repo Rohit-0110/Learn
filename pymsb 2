@@ -1,0 +1,106 @@
+from smbprotocol.connection import Connection
+
+# Replace these values with your SMB NAS drive details
+nas_address = "smb://nas_drive_address"
+nas_user = "your_username"
+nas_password = "your_password"
+share_name = "name_of_shared_folder"
+file_path = "/path/to/excel_file.xlsx"
+
+def connect_to_nas(nas_address, nas_user, nas_password):
+    connection = Connection(nas_address, username=nas_user, password=nas_password)
+    connection.connect()
+    return connection
+
+def read_excel_from_nas(connection, share_name, file_path):
+    with connection.tree_connect(share_name) as share:
+        with share.open(file_path) as file:
+            # Assuming pandas is already imported as pd
+            import pandas as pd
+            df = pd.read_excel(file)
+            return df
+
+if __name__ == "__main__":
+    connection = connect_to_nas(nas_address, nas_user, nas_password)
+    excel_df = read_excel_from_nas(connection, share_name, file_path)
+    print(excel_df)
+    connection.disconnect()
+
+******************************************************
+
+For example, let's say you have a NAS with the IP address 192.168.1.100, and you have shared a folder named Documents on the NAS. In this case, Documents would be the share name you need to provide when connecting to the SMB share.
+
+
+***********************************************************
+
+To establish an SMB connection to a NAS drive and read an Excel file using Python on a Mac, you'll need to use the `pandas` library for handling Excel files and the `smbprotocol` library for SMB connection. Before you proceed, make sure you have installed the required libraries.
+
+1. Install required libraries:
+Open your terminal and install the necessary libraries using `pip`:
+
+```bash
+pip install pandas
+pip install smbprotocol
+```
+
+2. Code to establish an SMB connection and read the Excel file:
+
+```python
+import pandas as pd
+from smbprotocol.connection import Connection
+
+def read_excel_from_smb_share(server, share, username, password, file_path):
+    # Establish the SMB connection
+    conn = Connection(server, username=username, password=password)
+    conn.connect()
+    
+    # Connect to the share
+    with conn.tree_connect(share) as share:
+        # Open the file on the share
+        with share.open(file_path, mode='rb') as f:
+            # Read the Excel file into a DataFrame using pandas
+            df = pd.read_excel(f)
+    
+    # Close the SMB connection
+    conn.disconnect()
+    
+    return df
+
+if __name__ == "__main__":
+    # Replace these with your NAS drive credentials and file path
+    server = "your_nas_server_name_or_ip"
+    share = "your_share_name"
+    username = "your_username"
+    password = "your_password"
+    file_path = "path/to/your/excel_file.xlsx"
+
+    try:
+        df = read_excel_from_smb_share(server, share, username, password, file_path)
+        print(df.head())  # Assuming you want to print the first few rows of the Excel file
+    except Exception as e:
+        print("Error:", e)
+```
+
+Replace the placeholders `your_nas_server_name_or_ip`, `your_share_name`, `your_username`, `your_password`, and `path/to/your/excel_file.xlsx` with the appropriate values specific to your NAS setup.
+
+Make sure you have the correct permissions and access to the NAS share and the Excel file before attempting to connect and read the file.
+
+
+*********************************************************
+
+The share name is a unique identifier given to a shared folder on a network-attached storage (NAS) device or a server. It is used to access the contents of the shared folder over the network.
+
+When you set up a shared folder on a NAS or server, you give it a name, and that name becomes the share name. Clients connecting to the NAS can access the contents of the shared folder by specifying the share name in the network path.
+
+For example, if you have a NAS with an IP address of `192.168.1.100` and you have a shared folder named `Data`, the share name for that shared folder would be `Data`.
+
+When accessing the shared folder using the SMB protocol, the network path would look like this:
+
+```
+\\192.168.1.100\Data
+```
+
+In the Python code example provided earlier, you need to replace `your_share_name` with the actual share name you have set up on your NAS device.
+
+
+
