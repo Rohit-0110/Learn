@@ -142,3 +142,12 @@ if __name__ == "__main__":
     print(df.head())
 
 
+***************************************************************************************
+
+smb://192.168.1.100/SharedDocs
+smb://[NAS_IP_Address]/[NAS_Shared_Folder_Name]
+mount -t smbfs //username:password@nas_ip_address/shared_folder_name ~/Desktop/NAS
+mount -t smbfs //NAS_IP_Address_or_Hostname/Share_Name /path/to/local/mount/point
+
+
+
